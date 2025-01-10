@@ -1,12 +1,24 @@
-#Installations for Windows Store Apps might be limited to the user account, so this pulls the apps again just in-case. 
+# Function to check if running as administrator
+function Test-Administrator {
+    $currentUser = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentUser.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
-#Install Discord from winget
+# Elevate the script if not running as administrator
+if (-not (Test-Administrator)) {
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
+}
+
+# Installations for Windows Store Apps might be limited to the user account, so this pulls the apps again just in-case. 
+
+# Install Discord from winget
 Start-Process -Wait -NoNewWindow winget install Discord.Discord
 
-#Install Spotify
+# Install Spotify
 Start-Process -Wait -NoNewWindow winget install Spotify.Spotify
 
-#Install OBS Studio
+# Install OBS Studio
 Start-Process -Wait -NoNewWindow winget install OBSProject.OBSStudio
 
 $programs = @(
@@ -40,16 +52,6 @@ function Enable-WindowsExplorer {
     Remove-ItemProperty -Path $registryPath -Name $registryName -ErrorAction SilentlyContinue
     Write-Host "Windows Explorer has been re-enabled for this user account."
 }
-
-function Elevate-Process {
-    $currentProcess = Get-Process -Id $PID
-    if (-not $currentProcess.StartInfo.Verb -eq "runas") {
-        Start-Process PowerShell -ArgumentList "-File `"$PSCommandPath`"" -Verb RunAs
-        exit
-    }
-}
-
-Elevate-Process
 
 while ($true) {
     Clear-Host
