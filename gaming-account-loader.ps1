@@ -41,6 +41,16 @@ function Enable-WindowsExplorer {
     Write-Host "Windows Explorer has been re-enabled for this user account."
 }
 
+function Elevate-Process {
+    $currentProcess = Get-Process -Id $PID
+    if (-not $currentProcess.StartInfo.Verb -eq "runas") {
+        Start-Process PowerShell -ArgumentList "-File `"$PSCommandPath`"" -Verb RunAs
+        exit
+    }
+}
+
+Elevate-Process
+
 while ($true) {
     Clear-Host
     Write-Host "Please select a program to execute:"
